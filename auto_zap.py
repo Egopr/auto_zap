@@ -1,21 +1,18 @@
 from docxtpl import DocxTemplate
-import csv
 
-path_csv = './excel/base.csv'
+# Загрузка шаблона
+doc = DocxTemplate(".\shablon\dog_25_NN.docx")
 
-def read_csv(path):
-    with open(path, newline='') as f:
-        reader = csv.reader(f)
-        for row in reader:
-            str_data = row[0]
-            result = str_data.split(';')
-            print(result)
+# Контекст с данными для подстановки
+context = {
+    'company_name': "ООО 'Рога и копыта'",
 
-def write_csv(path, date):
-    with open(path, 'w', newline='', encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerows(date)
+}
 
-line_1 = ['125', 'май6', 'Кашаев Егор Сергеевич6', 'Кашаев Борис Еорович7', '356', 'меркурия7', '90228']
-read_csv(path_csv)
-write_csv(path_csv, line_1)
+
+
+# Подстановка данных в шаблон
+doc.render(context)
+
+# Сохранение результата
+doc.save("generated_document.docx")
