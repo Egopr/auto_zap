@@ -1,8 +1,10 @@
 from docxtpl import DocxTemplate
 import time
+import re
 
 path = "./shablon/dog_25_NN.docx"
 doc = DocxTemplate(path)
+
 
 months_ru = {
     1: "января", 2: "февраля", 3: "марта", 4: "апреля",
@@ -25,9 +27,21 @@ def pas_one_str():
     return (f"серия {context['ser_pas']} номер {context['num_pas']}, "
             f"выдан {context['kem_pas']} {context['dp']}{context['mp']}{context['yp']}")
 
+def nomer_tel_format(number):
+    # Удаляем всё, кроме цифр
+    digits = re.sub(r'\D', '', number)  # Оставит только "79991234567"
+    # Форматируем
+    if len(digits) == 11:
+        formatted_phone = re.sub(r'(\d)(\d{3})(\d{3})(\d{2})(\d{2})', r'8 (\2) \3-\4-\5', digits)
+    else:
+        formatted_phone = number
+
+    return formatted_phone
+
+
 context = {
     'date_now': date_str,
-    'fio': 'Иванов Иван Иванович',
+    'fio': '',
     'fio_j': 'Иванова Елена Ивановна',
     'hb_j_day': '22',
     'hb_j_month': 'сентябрь',
@@ -52,6 +66,10 @@ context = {
     'pas_one_str': pas_one_str  # Добавляем результат функции в контекст
 }
 
+
+
+
 doc.render(context)
 name_file = input("Введите имя файла > ")
-doc.save(f"opis_{name_file}.docx")
+doc.save(f"Forma_{name_file}_{context['fio']}_{context['date_now']}.docx")
+
