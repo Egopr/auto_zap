@@ -14,11 +14,11 @@ year = current_time.tm_year
 month = months_ru[current_time.tm_mon]
 day = current_time.tm_mday
 
-print (current_time)
+
 date_str = f"«{day}» {month} {year} года"
 
 context = {
-        'date_now':date_str,
+        'date_now': date_str,
         'fio': 'Иванов Иван Иванович',
         'fio_j': ' Иванова Елена Ивановна',
         'hb_j_day': '22',
@@ -37,7 +37,7 @@ context = {
         'adres': ' Василиозерская 7 ',
         'mest_rab': 'ООО "Карповка"',
         'tel_num': '8 (911)759-51-16',
-        'e-mail':'Egor_mail_no@mail.ru',
+        'e_mail':'Egor_mail_no@mail.ru',
         'adres_reg': 'Ленинградская лбласть, г. Всеволожск, ул. Шишканя 12 кв. 423',
         'adres_fukt': 'Ленинградская лбласть, г. Всеволожск, ул. Василиозерская 7 кв. 54'
     }
