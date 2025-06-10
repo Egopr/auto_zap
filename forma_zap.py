@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit,
                              QTableWidget, QTableWidgetItem, QDialog, QTabWidget,
                              QTextBrowser)
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtPrintSupport import QPrintPreviewDialog
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
+
 
 class SearchDialog(QDialog):
     def __init__(self, parent=None):
@@ -177,8 +177,195 @@ class ParentChildForm(QWidget):
         self.setLayout(main_layout)
 
     def create_form_elements(self):
-        """Создает все элементы формы (как в предыдущем примере)"""
-        # ... (остается без изменений, как в предыдущем коде) ...
+        """Создает все элементы формы"""
+        self.form_layout = QFormLayout()
+
+        # Данные родителя
+        self.parent_fio = QLineEdit()
+        self.form_layout.addRow(QLabel("ФИО родителя:"), self.parent_fio)
+
+        # Данные ребенка
+        self.child_fio = QLineEdit()
+        self.child_birth = QDateEdit()
+        self.child_birth.setDisplayFormat("dd.MM.yyyy")
+        self.child_birth.setDate(QDate.currentDate())
+
+        self.form_layout.addRow(QLabel("ФИО ребенка:"), self.child_fio)
+        self.form_layout.addRow(QLabel("Дата рождения ребенка:"), self.child_birth)
+
+        # Паспортные данные
+        self.passport_series_number = QLineEdit()
+        self.passport_issue_date = QDateEdit()
+        self.passport_issue_date.setDisplayFormat("dd.MM.yyyy")
+        self.passport_issue_date.setDate(QDate.currentDate())
+        self.passport_issued_by = QTextEdit()
+        self.passport_issued_by.setMaximumHeight(60)
+
+        self.form_layout.addRow(QLabel("Серия и номер паспорта:"), self.passport_series_number)
+        self.form_layout.addRow(QLabel("Дата выдачи паспорта:"), self.passport_issue_date)
+        self.form_layout.addRow(QLabel("Кем выдан паспорт:"), self.passport_issued_by)
+
+        # Контактные данные
+        self.phone = QLineEdit()
+        self.email = QLineEdit()
+
+        self.form_layout.addRow(QLabel("Телефон:"), self.phone)
+        self.form_layout.addRow(QLabel("E-mail:"), self.email)
+
+        # Свидетельство о рождении
+        self.birth_cert_number = QLineEdit()
+        self.birth_cert_series = QLineEdit()
+        self.birth_cert_issued_by = QTextEdit()
+        self.birth_cert_issued_by.setMaximumHeight(60)
+
+        self.form_layout.addRow(QLabel("Номер свидетельства о рождении:"), self.birth_cert_number)
+        self.form_layout.addRow(QLabel("Серия свидетельства:"), self.birth_cert_series)
+        self.form_layout.addRow(QLabel("Кем выдано свидетельство:"), self.birth_cert_issued_by)
+
+        # Адреса
+        self.reg_address = QTextEdit()
+        self.reg_address.setMaximumHeight(60)
+        self.live_address = QTextEdit()
+        self.live_address.setMaximumHeight(60)
+        self.copy_address_btn = QPushButton("Скопировать адрес регистрации")
+        self.copy_address_btn.clicked.connect(self.copy_address)
+
+        self.form_layout.addRow(QLabel("Адрес регистрации:"), self.reg_address)
+        self.form_layout.addRow(QLabel("Адрес проживания:"), self.live_address)
+        self.form_layout.addRow(self.copy_address_btn)
+
+        # Кнопка отправки
+        self.submit_btn = QPushButton('Сохранить данные')
+        self.submit_btn.clicked.connect(self.save_data)
+
+    def copy_address(self):
+        """Копирует адрес регистрации в адрес проживания"""
+        self.live_address.setPlainText(self.reg_address.toPlainText())
+
+    def set_form_data(self, data):
+        """Заполняет форму данными из словаря"""
+        self.parent_fio.setText(data.get('parent_fio', ''))
+        self.child_fio.setText(data.get('child_fio', ''))
+
+        if 'child_birth' in data:
+            date = QDate.fromString(data['child_birth'], "dd.MM.yyyy")
+            self.child_birth.setDate(date)
+
+        self.passport_series_number.setText(data.get('passport_series_number', ''))
+
+        if 'passport_issue_date' in data:
+            date = QDate.fromString(data['passport_issue_date'], "dd.MM.yyyy")
+            self.passport_issue_date.setDate(date)
+
+        self.passport_issued_by.setPlainText(data.get('passport_issued_by', ''))
+        self.phone.setText(data.get('phone', ''))
+        self.email.setText(data.get('email', ''))
+        self.birth_cert_number.setText(data.get('birth_cert_number', ''))
+        self.birth_cert_series.setText(data.get('birth_cert_series', ''))
+        self.birth_cert_issued_by.setPlainText(data.get('birth_cert_issued_by', ''))
+        self.reg_address.setPlainText(data.get('reg_address', ''))
+        self.live_address.setPlainText(data.get('live_address', ''))
+
+    def get_form_data(self):
+        """Возвращает данные формы в виде словаря"""
+        return {
+            'parent_fio': self.parent_fio.text(),
+            'child_fio': self.child_fio.text(),
+            'child_birth': self.child_birth.date().toString("dd.MM.yyyy"),
+            'passport_series_number': self.passport_series_number.text(),
+            'passport_issue_date': self.passport_issue_date.date().toString("dd.MM.yyyy"),
+            'passport_issued_by': self.passport_issued_by.toPlainText(),
+            'phone': self.phone.text(),
+            'email': self.email.text(),
+            'birth_cert_number': self.birth_cert_number.text(),
+            'birth_cert_series': self.birth_cert_series.text(),
+            'birth_cert_issued_by': self.birth_cert_issued_by.toPlainText(),
+            'reg_address': self.reg_address.toPlainText(),
+            'live_address': self.live_address.toPlainText()
+        }
+
+    def load_data(self):
+        """Загружает данные из CSV файла"""
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getOpenFileName(
+            self, "Выберите файл с данными", "",
+            "CSV Files (*.csv);;All Files (*)",
+            options=options
+        )
+
+        if not filename:
+            return  # Пользователь отменил выбор
+
+        try:
+            with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                rows = list(reader)
+
+                if not rows:
+                    QMessageBox.warning(self, 'Предупреждение', 'Файл не содержит данных')
+                    return
+
+                # Загружаем последнюю запись из файла
+                self.set_form_data(rows[-1])
+
+            QMessageBox.information(self, 'Успех', 'Данные успешно загружены')
+        except Exception as e:
+            QMessageBox.critical(self, 'Ошибка', f'Не удалось загрузить данные: {str(e)}')
+
+    def save_data(self):
+        """Сохраняет данные формы в CSV файл"""
+        data = self.get_form_data()
+
+        try:
+            # Проверяем, существует ли файл
+            file_exists = False
+            try:
+                with open(self.filename, 'r', newline='', encoding='utf-8') as f:
+                    file_exists = True
+            except FileNotFoundError:
+                pass
+
+            # Записываем данные в файл
+            with open(self.filename, 'a', newline='', encoding='utf-8') as csvfile:
+                fieldnames = data.keys()
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                if not file_exists:
+                    writer.writeheader()  # Записываем заголовки, если файл новый
+
+                writer.writerow(data)
+
+            QMessageBox.information(self, 'Успех', f'Данные сохранены в файл {self.filename}')
+        except Exception as e:
+            QMessageBox.critical(self, 'Ошибка', f'Не удалось сохранить данные: {str(e)}')
+
+    def export_data(self):
+        """Экспортирует данные в выбранный файл"""
+        data = self.get_form_data()
+
+        options = QFileDialog.Options()
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Экспорт данных", "",
+            "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)",
+            options=options
+        )
+
+        if not filename:
+            return  # Пользователь отменил выбор
+
+        try:
+            with open(filename, 'w', newline='', encoding='utf-8') as file:
+                if filename.endswith('.csv'):
+                    writer = csv.DictWriter(file, fieldnames=data.keys())
+                    writer.writeheader()
+                    writer.writerow(data)
+                else:
+                    for key, value in data.items():
+                        file.write(f"{key}: {value}\n")
+
+            QMessageBox.information(self, 'Успех', f'Данные успешно экспортированы в {filename}')
+        except Exception as e:
+            QMessageBox.critical(self, 'Ошибка', f'Не удалось экспортировать данные: {str(e)}')
 
     def show_search_dialog(self):
         dialog = SearchDialog(self)
@@ -314,9 +501,6 @@ class ParentChildForm(QWidget):
         preview.setWindowTitle("Предпросмотр печати")
         preview.resize(800, 600)
         preview.exec_()
-
-    # Остальные методы без изменений (get_form_data, set_form_data, submit_form,
-    # save_data, export_data, load_data, copy_address)
 
 
 if __name__ == '__main__':
